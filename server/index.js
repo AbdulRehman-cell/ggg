@@ -8,6 +8,9 @@ const app = express()
 app.use(cors())
 app.use(express.json())
 
+// Health check route
+app.get('/health', (req, res) => res.status(200).send('OK'))
+
 app.use('/api/users', require('./routes/user.routes'))
 app.use('/api/matchs', require('./routes/match.routes'))
 
@@ -17,15 +20,12 @@ app.use(express.static(dist))
 app.get('*', function (_req, res) { res.sendFile(path.join(dist, 'index.html')) })
 
 const PORT = process.env.PORT || 4000
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/ggg'
+const MONGODB_URI = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/ggg'
 
-// Listen immediately — the site must load even while MongoDB connects
-// (or when no database is configured at all)
 app.listen(PORT, function () { console.log('Server + client on http://localhost:' + PORT) })
 
 mongoose.connect(MONGODB_URI, { serverSelectionTimeoutMS: 5000 })
   .then(function () { console.log('MongoDB connected') })
   .catch(function (err) {
     console.error('MongoDB connection failed: ' + err.message)
-    console.error('The site works, but API routes will fail until MONGODB_URI points at a running MongoDB.')
   })
